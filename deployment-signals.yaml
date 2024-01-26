@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {}
+  name: pod-signals
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pod-signals
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pod-signals
+    spec:
+      terminationGracePeriodSeconds: 2
+      tolerations:
+        - key: node.kubernetes.io/unreachable
+          operator: Equal
+          effect: NoExecute
+          tolerationSeconds: 10
+        - key: node.kubernetes.io/not-ready
+          operator: Equal
+          effect: NoExecute
+          tolerationSeconds: 10
+      containers:
+      - image: ghcr.io/avestuk/pod-signals:latest
+        imagePullPolicy: Always
+        name: pod-signals
+        env:
+          - name: "STOP_ON_TERM"
+            value: "false"
